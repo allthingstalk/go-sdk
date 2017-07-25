@@ -24,7 +24,6 @@ You should create an [AllThingsTalk Maker][7447b4f9] account, and a simple devic
 package main
 
 import (
-    "fmt"
     "github.com/allthingstalk/go-sdk"
     "time"
 )
