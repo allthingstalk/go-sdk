@@ -8,5 +8,9 @@ go:
 
 sudo: false
 
+branches:
+  only:
+    - master
+
 install:
   - go get -v -t ./...
