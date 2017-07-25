@@ -14,3 +14,7 @@ branches:
 
 install:
   - go get -v -t ./...
+
+matrix:
+  allow_failures:
+    - go: tip
