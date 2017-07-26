@@ -67,8 +67,8 @@ You can also customize behind-the-scenes functionality, in this case - HTTP and 
 
 ```go
 options := sdk.NewOptions().
-    SetAPI("https://api.allthingstalk.io").
-    SetMqtt("ssl://api.allthingstalk.io:8883")
+	SetAPI("https://api.allthingstalk.io").
+	SetMqtt("ssl://api.allthingstalk.io:8883")
 
 device, _ := sdk.NewDeviceWithOptions("<DEVICE_ID>", "<DEVICE_TOKEN>", options)
 ```
