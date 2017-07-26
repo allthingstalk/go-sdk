@@ -24,28 +24,28 @@ You should create an [AllThingsTalk Maker][7447b4f9] account, and a simple devic
 package main
 
 import (
-    "github.com/allthingstalk/go-sdk"
-    "time"
+	"github.com/allthingstalk/go-sdk"
+	"time"
 )
 
 const (
-    deviceID    = "<YOUR_DEVICE_ID>"
-    deviceToken = "<YOUR_DEVICE_TOKEN>"
+	deviceID    = "<YOUR_DEVICE_ID>"
+	deviceToken = "<YOUR_DEVICE_TOKEN>"
 )
 
 // A device which counts from 1 to 10 with a 1-second interval
 func main() {
-    // initialize a device
-    device, _ := sdk.NewDevice(deviceID, deviceToken)
+	// initialize a device
+	device, _ := sdk.NewDevice(deviceID, deviceToken)
 
-    // add an asset named `counter` of `Integer` type
-    counter, _ := device.AddInteger("counter")
+	// add an asset named `counter` of `Integer` type
+	counter, _ := device.AddInteger("counter")
 
-    // just count from 1 to 10 and send that value to Maker
-    for i := 1; i <= 10; i++ {
-        time.Sleep(1 * time.Second)
-        device.Publish(counter, i)
-    }
+	// just count from 1 to 10 and send that value to Maker
+	for i := 1; i <= 10; i++ {
+		time.Sleep(1 * time.Second)
+		device.Publish(counter, i)
+	}
 }
 ```
 
@@ -67,10 +67,10 @@ You can also customize behind-the-scenes functionality, in this case - HTTP and 
 
 ```go
 options := sdk.NewOptions().
-        SetAPI("https://api.allthingstalk.io").
-        SetMqtt("ssl://api.allthingstalk.io:8883")
+    SetAPI("https://api.allthingstalk.io").
+    SetMqtt("ssl://api.allthingstalk.io:8883")
 
-    device, _ := sdk.NewDeviceWithOptions("<DEVICE_ID>", "<DEVICE_TOKEN>", options)
+device, _ := sdk.NewDeviceWithOptions("<DEVICE_ID>", "<DEVICE_TOKEN>", options)
 ```
 
 ### Creating Assets
@@ -118,15 +118,15 @@ const locationProfile = `
 {
    "type":"object",
    "properties":{
-      "lat":  {"type": "number"},
-      "long": {"type": "number"}
+	  "lat":  {"type": "number"},
+	  "long": {"type": "number"}
    }
 }`
 
 // try creating it from JSON string
 prof, err := profile.JSON(locationProfile)
 if err != nil {
-  panic(err)
+	panic(err)
 }
 
 // create a location sensor asset with a location profile
@@ -155,12 +155,12 @@ AllThingsTalk Maker can also send commands to a device. You can set a global com
 
 ```go
 func onMessage(command sdk.Command) {
-    fmt.Printf("Received command for %s: %v with timestamp %s\n", command.Name, command.Value, command.Timestamp)
+	fmt.Printf("Received command for %s: %v with timestamp %s\n", command.Name, command.Value, command.Timestamp)
 }
 
 func main() {
-    // ...
-    device.SetCommandHandler(onMessage)
+	// ...
+	device.SetCommandHandler(onMessage)
 }
 ```
 
@@ -170,7 +170,7 @@ Most of the SDK APIs return an `error` in case something goes wrong. As per Go's
 
 ```go
 if err != nil {
-  // ...
+	// handle error...
 }
 ```
 
