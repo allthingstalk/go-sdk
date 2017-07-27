@@ -59,5 +59,5 @@ func TestNewComplexProfile_InvalidJson(t *testing.T) {
 	var json = "not valid"
 	var _, err = JSON(json)
 
-	a.Error(err, "Invalid JSON")
+	a.Error(err, ErrInvalidProfile)
 }

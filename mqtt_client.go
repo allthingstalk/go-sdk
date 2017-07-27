@@ -22,6 +22,7 @@ package sdk
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/eclipse/paho.mqtt.golang"
 	"regexp"
@@ -29,18 +30,22 @@ import (
 )
 
 type mqttClient struct {
-	username string
-	password string
-	Client   mqtt.Client
-	device   *Device
+	Client mqtt.Client
+	device *Device
 }
 
 var topicParser = regexp.MustCompile(`device/(?P<device_id>\w+?)/asset/(?P<asset_name>\w+?)/command`)
 
+// Errors
+var (
+	// ErrMqttNotEstablished is returned when there's an issue with establishing MQTT connection
+	ErrMqttNotEstablished = errors.New("Unable to connect to MQTT server, please verify your settings")
+)
+
 func newMqttClient(device *Device) (*mqttClient, error) {
 	username, password := device.token, device.token
 
-	DEBUG.Printf("Using MQTT Username/Password: %s\n", username)
+	DEBUG.Printf("[MQTT] Using MQTT Username/Password: %s\n", username)
 
 	opts := mqtt.NewClientOptions().AddBroker(device.options.mqttServer.String())
 	opts.SetKeepAlive(10 * time.Second)
@@ -48,16 +53,14 @@ func newMqttClient(device *Device) (*mqttClient, error) {
 	opts.SetPassword(password)
 	client := mqtt.NewClient(opts)
 
-	// maybe not panic, but return an error instead
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
-		return nil, fmt.Errorf("Unable to connect to MQTT: %v", token.Error())
+		ERROR.Printf("Unable to connect to mqtt: %v", token.Error())
+		return nil, ErrMqttNotEstablished
 	}
 
 	return &mqttClient{
-		username: username,
-		password: password,
-		Client:   client,
-		device:   device,
+		Client: client,
+		device: device,
 	}, nil
 }
 
@@ -65,7 +68,7 @@ func (client *mqttClient) publish(device *Device, asset *Asset, state State) {
 	topic := formatStateTopic(device, asset)
 	payload := formatPayload(state)
 
-	DEBUG.Printf("Publishings %v of asset %v to %s", payload, asset, topic)
+	DEBUG.Printf("[MQTT] Publishings %v of asset %v to %s", payload, asset, topic)
 	t := client.Client.Publish(topic, 0, false, payload)
 	t.Wait()
 }
@@ -76,12 +79,12 @@ func (client *mqttClient) subscribe(device *Device) {
 }
 
 func (client *mqttClient) onMessageReceived(mqtt mqtt.Client, message mqtt.Message) {
-	DEBUG.Printf("Received message on topic: %s\nMessage: %s\n", message.Topic(), message.Payload())
+	DEBUG.Printf("[MQTT] Received message on topic: %s\nMessage: %s\n", message.Topic(), message.Payload())
 
 	// topic must match expected regex
 	ok, parts := matchInboundTopic(message.Topic())
 	if ok != true {
-		DEBUG.Printf("Inbound topic %s does not match expected topic.", message.Topic())
+		DEBUG.Printf("[MQTT] Inbound topic %s does not match expected topic.", message.Topic())
 		return
 	}
 

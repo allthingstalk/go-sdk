@@ -20,19 +20,26 @@
 package sdk
 
 import (
+	"errors"
 	"fmt"
 	"github.com/dghubble/sling"
 	"net/http"
+)
+
+// Errors
+var (
+	// ErrAssetNotAdded is returned when asset could not be added
+	ErrAssetNotAdded = errors.New("Could not Add Asset")
 )
 
 type httpClient struct {
 	AssetService *assetService
 }
 
-func newHTTPClient(c *http.Client, device *Device) (*httpClient, error) {
+func newHTTPClient(c *http.Client, device *Device) *httpClient {
 	return &httpClient{
 		AssetService: newAssetService(c, device),
-	}, nil
+	}
 }
 
 type assetService struct {
@@ -46,7 +53,7 @@ type apiError struct {
 
 func newAssetService(httpClient *http.Client, device *Device) *assetService {
 	apiEndpoint := device.options.httpServer.String()
-	DEBUG.Printf("Using API endpoint: %s", apiEndpoint)
+	DEBUG.Printf("[HTTP] Using API endpoint: %s", apiEndpoint)
 
 	return &assetService{
 		sling: sling.New().Client(httpClient).Base(apiEndpoint),
@@ -64,16 +71,16 @@ func (service *assetService) addAsset(device *Device, asset *Asset) error {
 		Receive(nil, requestError)
 
 	if err != nil {
-		ERROR.Printf("Unable to add asset due to an error: %s\n", err)
-		return fmt.Errorf("Unable to add asset due to an error: %s", err)
+		ERROR.Printf("[HTTP] Unable to add asset due to an error: %s\n", err)
+		return ErrAssetNotAdded
 	}
 
 	if !isResponseSuccess(resp) {
-		ERROR.Printf("API rejected AddAsset with code %d: %s\n", resp.StatusCode, requestError.Error)
-		return fmt.Errorf("Could not add asset, api returned %d, %v", resp.StatusCode, requestError.Error)
+		ERROR.Printf("[HTTP] API rejected AddAsset with code %d: %s\n", resp.StatusCode, requestError.Error)
+		return ErrAssetNotAdded
 	}
 
-	INFO.Printf("Added asset %v\n", asset)
+	INFO.Printf("[HTTP] Added asset %v\n", asset)
 	return nil
 }
 

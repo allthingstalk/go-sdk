@@ -45,19 +45,13 @@ func NewDevice(deviceID string, token string) (*Device, error) {
 // NewDeviceWithOptions creates a new device using a DeviceId and Token, with
 // custom options being supplied.
 func NewDeviceWithOptions(deviceID string, token string, options *Options) (*Device, error) {
-	initLogging()
-
 	device := &Device{
 		id:      deviceID,
 		token:   token,
 		options: options,
 	}
 
-	httpC, err := newHTTPClient(nil, device)
-	if err != nil {
-		return nil, err
-	}
-
+	httpC := newHTTPClient(nil, device)
 	mqttC, err := newMqttClient(device)
 	if err != nil {
 		return nil, err

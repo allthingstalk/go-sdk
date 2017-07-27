@@ -43,6 +43,12 @@ const (
 	BooleanType SchemaType = "boolean"
 )
 
+// Errors
+var (
+	// ErrInvalidProfile is returned when profile is invalid
+	ErrInvalidProfile = errors.New("Profile JSON is invalid")
+)
+
 // New creates a profile for a given schema type.
 func New(schemaType SchemaType) Profile {
 	p, _ := JSON(fmt.Sprintf(`{"type": "%s"}`, string(schemaType)))
@@ -56,7 +62,7 @@ func JSON(j string) (Profile, error) {
 		json.Unmarshal([]byte(j), &mapped)
 		return Profile{Definition: mapped}, nil
 	}
-	return Profile{}, errors.New("Invalid JSON")
+	return Profile{}, ErrInvalidProfile
 }
 
 func (p Profile) json() string {
