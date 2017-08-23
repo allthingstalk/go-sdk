@@ -45,4 +45,8 @@ func main() {
 		fmt.Println(i)
 		device.Publish(counter, i)
 	}
+
+	// get last known asset state and print it
+	state, _ := device.GetState(counter)
+	fmt.Printf("Last state was '%v' at %v\n", state.Value, state.Timestamp)
 }

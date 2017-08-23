@@ -26,10 +26,13 @@ import (
 	"net/http"
 )
 
-// Errors
+// HTTP Errors
 var (
 	// ErrAssetNotAdded is returned when asset could not be added
 	ErrAssetNotAdded = errors.New("Could not Add Asset")
+
+	// ErrCountNotFetchState is returned when current state could not be obtained
+	ErrCountNotFetchState = errors.New("Count not obtain current Asset state")
 )
 
 type httpClient struct {
@@ -51,6 +54,11 @@ type apiError struct {
 	Error  string `json:"error"`
 }
 
+type assetStateResponse struct {
+	ID    string `json:"id"`
+	State State  `json:"state"`
+}
+
 func newAssetService(httpClient *http.Client, device *Device) *assetService {
 	apiEndpoint := device.options.httpServer.String()
 	DEBUG.Printf("[HTTP] Using API endpoint: %s", apiEndpoint)
@@ -60,6 +68,7 @@ func newAssetService(httpClient *http.Client, device *Device) *assetService {
 	}
 }
 
+//TODO: deduplicate code
 func (service *assetService) addAsset(device *Device, asset *Asset) error {
 	path := fmt.Sprintf("device/%s/asset/%s", device.id, asset.Name)
 	requestError := new(apiError)
@@ -82,6 +91,30 @@ func (service *assetService) addAsset(device *Device, asset *Asset) error {
 
 	INFO.Printf("[HTTP] Added asset %v\n", asset)
 	return nil
+}
+
+func (service *assetService) getState(device *Device, asset *Asset) (*State, error) {
+	path := fmt.Sprintf("device/%s/asset/%s/state", device.id, asset.Name)
+	requestError := new(apiError)
+	state := new(assetStateResponse)
+
+	resp, err := service.sling.New().
+		Set("Authorization", fmt.Sprintf("Bearer %s", device.token)).
+		Get(path).
+		Receive(state, requestError)
+
+	if err != nil {
+		ERROR.Printf("[HTTP] Unable to fetch state due to an error: %s\n", err)
+		return nil, ErrCountNotFetchState
+	}
+
+	if !isResponseSuccess(resp) {
+		ERROR.Printf("[HTTP] API rejected GetState with code %d: %s\n", resp.StatusCode, requestError.Error)
+		return nil, ErrCountNotFetchState
+	}
+
+	DEBUG.Printf("[HTTP] Got state for asset %v\n", asset)
+	return &state.State, nil
 }
 
 func isResponseSuccess(resp *http.Response) bool {

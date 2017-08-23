@@ -36,7 +36,7 @@ type mqttClient struct {
 
 var topicParser = regexp.MustCompile(`device/(?P<device_id>\w+?)/asset/(?P<asset_name>\w+?)/command`)
 
-// Errors
+// MQTT Errors
 var (
 	// ErrMqttNotEstablished is returned when there's an issue with establishing MQTT connection
 	ErrMqttNotEstablished = errors.New("Unable to connect to MQTT server, please verify your settings")

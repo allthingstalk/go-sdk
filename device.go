@@ -38,17 +38,16 @@ type Device struct {
 }
 
 // NewDevice creates a new device using a DeviceId and token.
-func NewDevice(deviceID string, token string) (*Device, error) {
-	return NewDeviceWithOptions(deviceID, token, NewOptions())
-}
-
-// NewDeviceWithOptions creates a new device using a DeviceId and Token, with
-// custom options being supplied.
-func NewDeviceWithOptions(deviceID string, token string, options *Options) (*Device, error) {
+func NewDevice(deviceID string, token string, options ...Option) (*Device, error) {
 	device := &Device{
 		id:      deviceID,
 		token:   token,
-		options: options,
+		options: newOptions(),
+	}
+
+	// Apply any options that might have been passed in
+	for _, o := range options {
+		o.apply(device)
 	}
 
 	httpC := newHTTPClient(nil, device)
@@ -62,6 +61,7 @@ func NewDeviceWithOptions(deviceID string, token string, options *Options) (*Dev
 	device.listen()
 
 	return device, nil
+
 }
 
 // Add adds an asset to a device.
@@ -102,6 +102,11 @@ func (device *Device) Publish(a *Asset, value interface{}) {
 // PublishState publishes asset state. Client can supply value and timestamp.
 func (device *Device) PublishState(asset *Asset, state State) {
 	device.mqttClient.publish(device, asset, state)
+}
+
+// GetState obtains last known asset state.
+func (device *Device) GetState(asset *Asset) (*State, error) {
+	return device.httpClient.AssetService.getState(device, asset)
 }
 
 // SetCommandHandler allows for setting a function to handle incoming commands.

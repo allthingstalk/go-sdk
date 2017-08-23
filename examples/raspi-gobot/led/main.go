@@ -21,9 +21,12 @@
 package main
 
 import (
+	"fmt"
 	"github.com/allthingstalk/go-sdk"
-	"math/rand"
-	"time"
+	"github.com/allthingstalk/go-sdk/profile"
+	"gobot.io/x/gobot"
+	"gobot.io/x/gobot/drivers/gpio"
+	"gobot.io/x/gobot/platforms/raspi"
 )
 
 const (
@@ -31,24 +34,36 @@ const (
 	deviceToken = "<DEVICE_TOKEN>"
 )
 
-// A virtual weather station device
+// IoT Hello World Example. Toggle the LED remotely from Maker platform.
+// Connect your LED to GPIO4 (Pin 7)
+var r = raspi.NewAdaptor()
+var led = gpio.NewLedDriver(r, "7")
+
+func onMessage(command sdk.Command) {
+	if command.Name == "LED" {
+		if command.Value == true {
+			fmt.Printf("Turning LED On.\n")
+			led.On()
+		} else {
+			fmt.Printf("Turning LED Off.\n")
+			led.Off()
+		}
+	}
+}
+
 func main() {
 	device, err := sdk.NewDevice(deviceID, deviceToken)
 	if err != nil {
 		panic(err)
 	}
 
-	// add some environmental sensors
-	temperature, _ := device.AddNumber("temperature")
-	humidity, _ := device.AddNumber("humidity")
-	pressure, _ := device.AddNumber("pressure")
+	device.SetCommandHandler(onMessage)
+	device.Add(sdk.NewActuator("LED", profile.Boolean()))
 
-	// and just push some random data to them, indefinitely
-	rand.Seed(time.Now().UnixNano())
-	for {
-		time.Sleep(1 * time.Second)
-		device.Publish(temperature, rand.Int31n(30))
-		device.Publish(humidity, rand.Int31n(100))
-		device.Publish(pressure, rand.Int31n(1000))
-	}
+	robot := gobot.NewRobot("led_demo",
+		[]gobot.Connection{r},
+		[]gobot.Device{led},
+	)
+
+	robot.Start()
 }

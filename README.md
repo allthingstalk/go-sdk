@@ -36,11 +36,17 @@ const (
 // A device which counts from 1 to 10 with a 1-second interval
 func main() {
 	// initialize a device
-	device, _ := sdk.NewDevice(deviceID, deviceToken)
+	device, err := sdk.NewDevice(deviceID, deviceToken)
+	if err != nil {
+		panic(err)
+	}
 
 	// add an asset named `counter` of `Integer` type
-	counter, _ := device.AddInteger("counter")
-
+	counter, err := device.AddInteger("counter")
+	if err != nil {
+		panic(err)
+	}
+	
 	// just count from 1 to 10 and send that value to Maker
 	for i := 1; i <= 10; i++ {
 		time.Sleep(1 * time.Second)
@@ -66,11 +72,9 @@ device, _ := sdk.NewDevice(deviceID, deviceToken)
 You can also customize behind-the-scenes functionality, in this case - HTTP and MQTT clients, by optionally providing endpoints for them. By default these are securely connecting to Maker:
 
 ```go
-options := sdk.NewOptions().
-	SetAPI("https://api.allthingstalk.io").
-	SetMqtt("ssl://api.allthingstalk.io:8883")
-
-device, _ := sdk.NewDeviceWithOptions("<DEVICE_ID>", "<DEVICE_TOKEN>", options)
+device, _ := sdk.NewDevice("<DEVICE_ID>", "<DEVICE_TOKEN>", 
+	sdk.WithHTTP("https://api.allthingstalk.io"),
+	sdk.WithMQTT("ssl://api.allthingstalk.io:8883"))
 ```
 
 ### Creating Assets
@@ -100,6 +104,10 @@ device.Add(numberSensor)
 ```
 
 #### Profiles
+
+```go
+import "github.com/allthingstalk/go-sdk/profile"
+```
 
 Profiles are JSON Schemas which describe kind of data an Asset is working with. When creating an asset, we have to specify it's profile as well. Simplest way of doing this is using one of the pre-set types in `profile` package:
 
