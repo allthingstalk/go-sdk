@@ -22,8 +22,9 @@ package sdk
 import (
 	"errors"
 	"fmt"
-	"github.com/dghubble/sling"
 	"net/http"
+
+	"github.com/dghubble/sling"
 )
 
 // HTTP Errors
@@ -33,6 +34,12 @@ var (
 
 	// ErrCountNotFetchState is returned when current state could not be obtained
 	ErrCountNotFetchState = errors.New("Count not obtain current Asset state")
+)
+
+// Constants
+const (
+	// UA identifies the SDK
+	UA = "ATTalk-GoSDK/1.0.1"
 )
 
 type httpClient struct {
@@ -64,7 +71,10 @@ func newAssetService(httpClient *http.Client, device *Device) *assetService {
 	DEBUG.Printf("[HTTP] Using API endpoint: %s", apiEndpoint)
 
 	return &assetService{
-		sling: sling.New().Client(httpClient).Base(apiEndpoint),
+		sling: sling.New().
+			Client(httpClient).
+			Base(apiEndpoint).
+			Set("User-Agent", UA),
 	}
 }
 

@@ -72,7 +72,7 @@ device, _ := sdk.NewDevice(deviceID, deviceToken)
 You can also customize behind-the-scenes functionality, in this case - HTTP and MQTT clients, by optionally providing endpoints for them. By default these are securely connecting to Maker:
 
 ```go
-device, _ := sdk.NewDevice("<DEVICE_ID>", "<DEVICE_TOKEN>", 
+device, _ := sdk.NewDevice("<DEVICE_ID>", "<DEVICE_TOKEN>",
 	sdk.WithHTTP("https://api.allthingstalk.io"),
 	sdk.WithMQTT("ssl://api.allthingstalk.io:8883"))
 ```

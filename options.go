@@ -21,7 +21,7 @@ func (f optionFunc) apply(device *Device) {
 	f(device)
 }
 
-const httpEndpoint string = "http://api.allthingstalk.io"
+const httpEndpoint string = "https://api.allthingstalk.io"
 const mqttEndpoint string = "ssl://api.allthingstalk.io:8883"
 
 // NewOptions creates default options.
